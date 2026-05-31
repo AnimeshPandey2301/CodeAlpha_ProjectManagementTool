@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project Management Dashboard – View all your projects, tasks, and team activity at a glance.">
+    <title>Project Management – Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">📊</div>
+                <span class="logo-text">Project Management</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Navigation</div>
+                    <a href="/dashboard.html" class="sidebar-link active" id="nav-dashboard">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="sidebar-link" id="nav-my-tasks">
+                        <span class="icon">✅</span>
+                        <span>My Tasks</span>
+                    </a>
+                    <a href="#" class="sidebar-link" id="nav-notifications">
+                        <span class="icon">🔔</span>
+                        <span>Notifications</span>
+                        <span class="badge hidden" id="sidebar-notif-badge">0</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Projects</div>
+                    <div id="sidebar-projects"></div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer" style="position: relative;">
+                <div class="user-menu" id="user-menu-btn">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-info">
+                        <div class="user-name" id="user-name"></div>
+                        <div class="user-email" id="user-email"></div>
+                    </div>
+                    <span>⋮</span>
+                </div>
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="dropdown-item" id="btn-profile">
+                        <span>👤</span> Profile Settings
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item danger" id="btn-logout">
+                        <span>🚪</span> Sign Out
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="page-title">
+                    <button class="mobile-menu-toggle btn-icon" id="mobile-menu-btn">☰</button>
+                    <h2>Dashboard</h2>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" id="btn-new-project">
+                        <span>+</span> New Project
+                    </button>
+                    <button class="btn-icon btn-ghost notification-btn" id="btn-notifications">
+                        🔔
+                        <span class="notif-badge hidden" id="header-notif-badge"></span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-content" id="dashboard-content">
+                <!-- Stats -->
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(108, 99, 255, 0.15);">📋</div>
+                        <div>
+                            <div class="stat-value" id="stat-projects">0</div>
+                            <div class="stat-label">Projects</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(249, 199, 79, 0.15);">📝</div>
+                        <div>
+                            <div class="stat-value" id="stat-tasks">0</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(67, 170, 139, 0.15);">✅</div>
+                        <div>
+                            <div class="stat-value" id="stat-completed">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(255, 101, 132, 0.15);">👥</div>
+                        <div>
+                            <div class="stat-value" id="stat-members">0</div>
+                            <div class="stat-label">Team Members</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects List -->
+                <div class="section-header">
+                    <h3>Your Projects</h3>
+                </div>
+                <div class="projects-grid" id="projects-grid">
+                    <!-- Projects loaded dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notifications-panel">
+        <div class="notif-header">
+            <h3>🔔 Notifications</h3>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-ghost btn-sm" id="btn-mark-all-read">Mark all read</button>
+                <button class="modal-close" id="btn-close-notifications">✕</button>
+            </div>
+        </div>
+        <div class="notif-list" id="notif-list"></div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="new-project-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Create New Project</h3>
+                <button class="modal-close" onclick="closeModal('new-project-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-project-form">
+                    <div class="form-group">
+                        <label for="project-name">Project Name</label>
+                        <input type="text" id="project-name" placeholder="e.g., Website Redesign" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-desc">Description</label>
+                        <textarea id="project-desc" placeholder="What is this project about?" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Icon</label>
+                        <div class="icon-picker-grid" id="icon-picker">
+                            <div class="icon-option selected" data-icon="📋">📋</div>
+                            <div class="icon-option" data-icon="🚀">🚀</div>
+                            <div class="icon-option" data-icon="💡">💡</div>
+                            <div class="icon-option" data-icon="🎯">🎯</div>
+                            <div class="icon-option" data-icon="⚡">⚡</div>
+                            <div class="icon-option" data-icon="🔥">🔥</div>
+                            <div class="icon-option" data-icon="🌟">🌟</div>
+                            <div class="icon-option" data-icon="📊">📊</div>
+                            <div class="icon-option" data-icon="🎨">🎨</div>
+                            <div class="icon-option" data-icon="🛠️">🛠️</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Color</label>
+                        <div class="color-picker-grid" id="color-picker">
+                            <div class="color-option selected" data-color="#6C63FF" style="background: #6C63FF;"></div>
+                            <div class="color-option" data-color="#FF6584" style="background: #FF6584;"></div>
+                            <div class="color-option" data-color="#43AA8B" style="background: #43AA8B;"></div>
+                            <div class="color-option" data-color="#F9C74F" style="background: #F9C74F;"></div>
+                            <div class="color-option" data-color="#F3722C" style="background: #F3722C;"></div>
+                            <div class="color-option" data-color="#577590" style="background: #577590;"></div>
+                            <div class="color-option" data-color="#90BE6D" style="background: #90BE6D;"></div>
+                            <div class="color-option" data-color="#F94144" style="background: #F94144;"></div>
+                            <div class="color-option" data-color="#277DA1" style="background: #277DA1;"></div>
+                            <div class="color-option" data-color="#4D908E" style="background: #4D908E;"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('new-project-modal')">Cancel</button>
+                <button class="btn btn-primary" id="btn-create-project">Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

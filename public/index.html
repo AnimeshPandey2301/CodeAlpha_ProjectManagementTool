@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project Management – A modern collaborative tool to create projects, assign tasks, and communicate with your team in real-time.">
+    <title>Project Management – Sign In</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <div class="auth-container" id="auth-container">
+        <!-- Login Form -->
+        <div class="auth-card" id="login-card">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span class="logo-text">Project Management</span>
+            </div>
+            <h2>Welcome back</h2>
+            <p class="subtitle">Sign in to your account to continue</p>
+
+            <div class="error-message" id="login-error"></div>
+
+            <form id="login-form" autocomplete="on">
+                <div class="form-group">
+                    <label for="login-email">Email or Username</label>
+                    <div class="input-wrapper">
+                        <span class="icon">📧</span>
+                        <input type="text" id="login-email" name="login" placeholder="you@example.com" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="login-password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    Sign In
+                </button>
+            </form>
+
+            <p class="switch-auth">
+                Don't have an account? <a href="#" id="show-register">Create one</a>
+            </p>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-card hidden" id="register-card">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span class="logo-text">Project Management</span>
+            </div>
+            <h2>Create account</h2>
+            <p class="subtitle">Start managing projects with your team</p>
+
+            <div class="error-message" id="register-error"></div>
+
+            <form id="register-form" autocomplete="on">
+                <div class="form-group">
+                    <label for="reg-fullname">Full Name</label>
+                    <div class="input-wrapper">
+                        <span class="icon">👤</span>
+                        <input type="text" id="reg-fullname" name="full_name" placeholder="John Doe" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <div class="input-wrapper">
+                        <span class="icon">@</span>
+                        <input type="text" id="reg-username" name="username" placeholder="johndoe" required autocomplete="username" minlength="3" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <div class="input-wrapper">
+                        <span class="icon">📧</span>
+                        <input type="email" id="reg-email" name="email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="reg-password" name="password" placeholder="Min 6 characters" required autocomplete="new-password" minlength="6">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="register-btn">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="switch-auth">
+                Already have an account? <a href="#" id="show-login">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

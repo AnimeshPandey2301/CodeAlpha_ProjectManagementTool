@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project Management Board – Kanban board for managing tasks, assigning team members, and tracking progress.">
+    <title>Project Management – Board</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">📊</div>
+                <span class="logo-text">Project Management</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Navigation</div>
+                    <a href="/dashboard.html" class="sidebar-link" id="nav-dashboard">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="sidebar-link" id="nav-my-tasks">
+                        <span class="icon">✅</span>
+                        <span>My Tasks</span>
+                    </a>
+                    <a href="#" class="sidebar-link" id="nav-notifications">
+                        <span class="icon">🔔</span>
+                        <span>Notifications</span>
+                        <span class="badge hidden" id="sidebar-notif-badge">0</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Projects</div>
+                    <div id="sidebar-projects"></div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer" style="position: relative;">
+                <div class="user-menu" id="user-menu-btn">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <div class="user-info">
+                        <div class="user-name" id="user-name"></div>
+                        <div class="user-email" id="user-email"></div>
+                    </div>
+                    <span>⋮</span>
+                </div>
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="dropdown-item" id="btn-profile">
+                        <span>👤</span> Profile Settings
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item danger" id="btn-logout">
+                        <span>🚪</span> Sign Out
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Board Header -->
+            <div class="board-header" id="board-header">
+                <div class="project-info">
+                    <button class="mobile-menu-toggle btn-icon" id="mobile-menu-btn">☰</button>
+                    <div class="project-icon-lg" id="board-project-icon" style="background: rgba(108,99,255,0.15);">📋</div>
+                    <div>
+                        <div class="project-name" id="board-project-name">Loading...</div>
+                        <div class="project-meta" id="board-project-meta"></div>
+                    </div>
+                </div>
+                <div class="board-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-members">
+                        👥 Members
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="btn-activity">
+                        📋 Activity
+                    </button>
+                    <button class="btn-icon btn-ghost notification-btn" id="btn-notifications">
+                        🔔
+                        <span class="notif-badge hidden" id="header-notif-badge"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="board-container" id="board-container">
+                <div class="loading-overlay">
+                    <div class="loading-spinner lg"></div>
+                    <p>Loading board...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notifications-panel">
+        <div class="notif-header">
+            <h3>🔔 Notifications</h3>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-ghost btn-sm" id="btn-mark-all-read">Mark all read</button>
+                <button class="modal-close" id="btn-close-notifications">✕</button>
+            </div>
+        </div>
+        <div class="notif-list" id="notif-list"></div>
+    </div>
+
+    <!-- New Task Modal -->
+    <div class="modal-overlay" id="new-task-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Create New Task</h3>
+                <button class="modal-close" onclick="closeModal('new-task-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-task-form">
+                    <input type="hidden" id="new-task-column-id">
+                    <div class="form-group">
+                        <label for="task-title">Title</label>
+                        <input type="text" id="task-title" placeholder="What needs to be done?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" placeholder="Add more details..." rows="3"></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="task-due-date">Due Date</label>
+                            <input type="date" id="task-due-date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-assignee">Assign To</label>
+                        <select id="task-assignee">
+                            <option value="">Unassigned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Labels</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="label-checkboxes">
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="bug"> <span class="task-label label-bug">Bug</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="feature"> <span class="task-label label-feature">Feature</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="enhancement"> <span class="task-label label-enhancement">Enhancement</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="design"> <span class="task-label label-design">Design</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="docs"> <span class="task-label label-docs">Docs</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.8125rem;">
+                                <input type="checkbox" value="testing"> <span class="task-label label-testing">Testing</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('new-task-modal')">Cancel</button>
+                <button class="btn btn-primary" id="btn-create-task">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal-overlay" id="task-detail-modal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 id="detail-task-title">Task Details</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-danger btn-sm" id="btn-delete-task">🗑️ Delete</button>
+                    <button class="modal-close" onclick="closeModal('task-detail-modal')">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="task-detail-body">
+                    <div class="task-detail-main">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="detail-description" placeholder="Add a description..." rows="4"></textarea>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="comments-section">
+                            <h4>💬 Comments <span id="comment-count" style="color: var(--text-muted); font-weight: normal; font-size: 0.875rem;"></span></h4>
+                            <div id="comments-list"></div>
+                            <div class="comment-input-wrapper">
+                                <textarea class="comment-input" id="comment-input" placeholder="Write a comment... Press Enter to send" rows="1"></textarea>
+                                <button class="btn btn-primary btn-sm" id="btn-send-comment" style="align-self: flex-end;">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-detail-sidebar">
+                        <div class="detail-field">
+                            <label>Status</label>
+                            <select id="detail-status"></select>
+                        </div>
+                        <div class="detail-field">
+                            <label>Priority</label>
+                            <select id="detail-priority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="detail-field">
+                            <label>Assignee</label>
+                            <select id="detail-assignee">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                        <div class="detail-field">
+                            <label>Due Date</label>
+                            <input type="date" id="detail-due-date">
+                        </div>
+                        <div class="detail-field">
+                            <label>Created By</label>
+                            <div class="field-value" id="detail-created-by"></div>
+                        </div>
+                        <div class="detail-field">
+                            <label>Created</label>
+                            <div class="field-value" id="detail-created-at"></div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="btn-save-task" style="width: 100%;">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Modal -->
+    <div class="modal-overlay" id="members-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>👥 Team Members</h3>
+                <button class="modal-close" onclick="closeModal('members-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Add Member</label>
+                    <input type="text" id="member-search" placeholder="Search by name, username, or email...">
+                    <div class="search-results hidden" id="member-search-results"></div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <label style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 8px;">Current Members</label>
+                    <div class="members-list" id="members-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Modal -->
+    <div class="modal-overlay" id="activity-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📋 Activity Log</h3>
+                <button class="modal-close" onclick="closeModal('activity-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="activity-feed" id="activity-feed"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/board.js"></script>
+</body>
+</html>
