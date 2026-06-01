@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let db = null;
+let inTransaction = false;
 const DB_PATH = process.env.DB_PATH || './database/taskflow.db';
 
 async function initializeDatabase() {
@@ -162,7 +163,7 @@ async function initializeDatabase() {
 
 // Save database to disk
 function saveDatabase() {
-    if (!db) return;
+    if (!db || inTransaction) return;
     const data = db.export();
     const buffer = Buffer.from(data);
     fs.writeFileSync(DB_PATH, buffer);
@@ -206,14 +207,21 @@ const dbHelper = {
     },
     transaction(fn) {
         return (...args) => {
+            inTransaction = true;
             db.run('BEGIN TRANSACTION');
             try {
                 const result = fn(...args);
                 db.run('COMMIT');
+                inTransaction = false;
                 saveDatabase();
                 return result;
             } catch (err) {
-                db.run('ROLLBACK');
+                inTransaction = false;
+                try {
+                    db.run('ROLLBACK');
+                } catch (rollbackErr) {
+                    console.error('Failed to rollback transaction:', rollbackErr);
+                }
                 throw err;
             }
         };
