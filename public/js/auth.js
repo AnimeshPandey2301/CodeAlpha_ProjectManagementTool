@@ -17,6 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
     const loginError = document.getElementById('login-error');
     const registerError = document.getElementById('register-error');
+    const forgotCard = document.getElementById('forgot-card');
+    const showForgot = document.getElementById('show-forgot');
+    const showLoginFromForgot = document.getElementById('show-login-from-forgot');
+    const forgotEmailForm = document.getElementById('forgot-email-form');
+    const forgotResetForm = document.getElementById('forgot-reset-form');
+    const forgotError = document.getElementById('forgot-error');
+    const forgotSuccess = document.getElementById('forgot-success');
+    let recoveryEmail = '';
 
     // Toggle between login and register
     showRegister.addEventListener('click', (e) => {
@@ -33,6 +41,29 @@ document.addEventListener('DOMContentLoaded', () => {
         loginCard.classList.remove('hidden');
         loginCard.style.animation = 'fadeInUp 0.4s ease-out';
         registerError.classList.remove('show');
+    });
+
+    showForgot.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginCard.classList.add('hidden');
+        forgotCard.classList.remove('hidden');
+        forgotCard.style.animation = 'fadeInUp 0.4s ease-out';
+        loginError.classList.remove('show');
+        forgotError.classList.remove('show');
+        forgotSuccess.classList.remove('show');
+        forgotEmailForm.classList.remove('hidden');
+        forgotResetForm.classList.add('hidden');
+        forgotEmailForm.reset();
+        forgotResetForm.reset();
+    });
+
+    showLoginFromForgot.addEventListener('click', (e) => {
+        e.preventDefault();
+        forgotCard.classList.add('hidden');
+        loginCard.classList.remove('hidden');
+        loginCard.style.animation = 'fadeInUp 0.4s ease-out';
+        forgotError.classList.remove('show');
+        forgotSuccess.classList.remove('show');
     });
 
     // Login form submission
@@ -98,6 +129,90 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             registerError.textContent = err.message;
             registerError.classList.add('show');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    });
+
+    // Forgot Password - Step 1: Request Code
+    forgotEmailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('forgot-email-btn');
+        const originalText = btn.textContent;
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Sending...';
+            forgotError.classList.remove('show');
+            forgotSuccess.classList.remove('show');
+
+            const email = document.getElementById('forgot-email').value.trim();
+            const data = await api.post('/auth/forgot-password', { email });
+
+            recoveryEmail = email;
+            
+            // Render simulated recovery code message
+            forgotSuccess.textContent = `Reset code generated! Simulated Code: ${data.code}`;
+            forgotSuccess.classList.add('show');
+
+            showToast('Verification code generated!', 'success');
+
+            // Toggle form views
+            forgotEmailForm.classList.add('hidden');
+            forgotResetForm.classList.remove('hidden');
+            forgotResetForm.style.animation = 'fadeInUp 0.4s ease-out';
+            
+            // Prefill verification code for ease of testing in local development
+            document.getElementById('reset-code').value = data.code;
+            
+            btn.disabled = false;
+            btn.textContent = originalText;
+        } catch (err) {
+            forgotError.textContent = err.message;
+            forgotError.classList.add('show');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    });
+
+    // Forgot Password - Step 2: Reset Password
+    forgotResetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('forgot-reset-btn');
+        const originalText = btn.textContent;
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Resetting...';
+            forgotError.classList.remove('show');
+
+            const code = document.getElementById('reset-code').value.trim();
+            const new_password = document.getElementById('reset-password').value;
+
+            const data = await api.post('/auth/reset-password', {
+                email: recoveryEmail,
+                code,
+                new_password
+            });
+
+            showToast(data.message, 'success');
+
+            // Success: clear forms and return to login
+            forgotCard.classList.add('hidden');
+            loginCard.classList.remove('hidden');
+            loginCard.style.animation = 'fadeInUp 0.4s ease-out';
+            
+            // Clean up
+            forgotEmailForm.reset();
+            forgotResetForm.reset();
+            forgotSuccess.classList.remove('show');
+            recoveryEmail = '';
+
+            btn.disabled = false;
+            btn.textContent = originalText;
+        } catch (err) {
+            forgotError.textContent = err.message;
+            forgotError.classList.add('show');
             btn.disabled = false;
             btn.textContent = originalText;
         }

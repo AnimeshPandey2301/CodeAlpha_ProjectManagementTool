@@ -7,6 +7,9 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// In-memory store for simulated password reset codes (email -> { code, expires })
+const resetCodes = new Map();
+
 // Avatar color palette
 const AVATAR_COLORS = [
     '#6C63FF', '#FF6584', '#43AA8B', '#F9C74F', '#F3722C',
@@ -232,6 +235,78 @@ router.get('/search', authenticateToken, (req, res) => {
     } catch (err) {
         console.error('User search error:', err);
         res.status(500).json({ error: 'Failed to search users.' });
+    }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', (req, res) => {
+    try {
+        const db = getDb();
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email address is required.' });
+        }
+
+        const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
+        if (!user) {
+            return res.status(404).json({ error: 'No account found with this email address.' });
+        }
+
+        // Generate a 6-digit verification code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store code with a 10-minute expiry
+        resetCodes.set(email.toLowerCase(), {
+            code,
+            expires: Date.now() + 10 * 60 * 1000
+        });
+
+        // In production, an email would be sent here.
+        // For local development, we return the code directly to make testing seamless.
+        res.json({
+            message: 'A verification code has been generated.',
+            code: code // Included for easy access in our local environment
+        });
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        res.status(500).json({ error: 'Failed to process forgot password request.' });
+    }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', (req, res) => {
+    try {
+        const db = getDb();
+        const { email, code, new_password } = req.body;
+
+        if (!email || !code || !new_password) {
+            return res.status(400).json({ error: 'Email, code, and new password are required.' });
+        }
+
+        if (new_password.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+        }
+
+        const storedData = resetCodes.get(email.toLowerCase());
+        if (!storedData || storedData.code !== code || Date.now() > storedData.expires) {
+            return res.status(400).json({ error: 'Invalid or expired verification code.' });
+        }
+
+        // Hash the new password and update in database
+        const salt = bcrypt.genSaltSync(12);
+        const passwordHash = bcrypt.hashSync(new_password, salt);
+
+        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?')
+            .run(passwordHash, email.toLowerCase());
+
+        // Remove the used code
+        resetCodes.delete(email.toLowerCase());
+
+        res.json({ message: 'Password reset successfully! You can now sign in with your new password.' });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({ error: 'Failed to reset password.' });
     }
 });
 
